@@ -213,11 +213,8 @@ func main() {
 					keyword = ""
 				}
 			}*/
-			str := ""
-			for k:=0 ; k <len(arr); k++ {
-				str += arr[k] + " "
-			}
-			str2 := functions.TextFormated(str)
+			
+			str2 := functions.TextFormated(arr)
 			//arr2 := strings.Fields(string(str2))
 			fmt.Printf("%v\n", str2)
 		}

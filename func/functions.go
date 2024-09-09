@@ -1,31 +1,23 @@
 package functions
 
-import (
-	"strings"
-	"unicode"
-)
+import "fmt"
 
-func TextFormated(s  string) string{
+func TextFormated(s  []string) string{
 	var res string
-	punc := false
-	for _, v := range s {
-		if v == ',' || v == ';' || v == '!' || v == '?' || v == ':' {
-			if punc {
-				res += " "
+	for i, ch := range s {
+		if ch == "," || ch == "!" || ch == "?" || ch == ":" || ch ==";" {
+			fmt.Print("yes")
+			if s[i-1] == " " {
+				fmt.Print("zeb")
+				res += res[:len(res)-1]
+			    res += ch
 			}
-			res += string(v)
-			punc = false
-		} else if unicode.IsSpace(v) {
-			if !punc {
-				res += " "
-				punc = true
-			}
-		} else {
-			res += string(v)
-			punc = false
+			res += ch
+			res += " " 
+			} else {
+				res += ch + " "
 		}
-	}
-	res = strings.TrimSpace(res)
+	}	
 	return res
 }
 
