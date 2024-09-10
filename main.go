@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"io"
+	functions "go-reloaded/func"
 	"os"
 	"strconv"
 	"strings"
-	"go-reloaded/func"
 )
 
 func main() {
@@ -40,15 +39,9 @@ func main() {
 			fmt.Println("the extension must be .txt")
 			os.Exit(1)
 		} else {
-			file, err := os.Open(in)
+			res, err := os.ReadFile(in)
 			if err != nil {
 				fmt.Println("Err msg: ", err)
-				return
-			}
-			defer file.Close()
-			res, err := io.ReadAll(file)
-			if err != nil {
-				fmt.Println("err msg :", err)
 				return
 			}
 			t := ""
@@ -58,7 +51,6 @@ func main() {
 					t += " " + string(v)
 					insideParenthese = true
 				} else if v == ')' {
-
 					t += string(v) + " "
 					insideParenthese = false
 
@@ -70,7 +62,7 @@ func main() {
 							t += string(v)
 						}
 					} else {
-						if v > 32 && v < 48 {
+						if v == ',' || v == '.' || v == ':' || v == '!' || v == '?' || v == ';' {
 							t += " " + string(v) + " "
 						} else {
 							t += string(v)
@@ -79,6 +71,7 @@ func main() {
 				}
 
 			}
+
 			arr1 := strings.Fields(string(t))
 			res2 := ""
 			for _, item := range arr1 {
@@ -87,7 +80,6 @@ func main() {
 					if strings.Contains(content, ",") {
 						res2 += "(" + content + ") "
 					} else {
-						// Apply rules to update the content
 						switch content {
 						case "cap":
 							res2 += "(cap,1) "
@@ -107,23 +99,23 @@ func main() {
 
 			}
 			arr := strings.Fields(res2)
-			//fmt.Println(arr)
 			for i := 0; i < len(arr); i++ {
 				insideParenthese2 := false
 				if strings.HasPrefix(arr[i], "(") && strings.HasSuffix(arr[i], ")") {
 					insideParenthese2 = true
-				} else{
+				} else {
 					insideParenthese2 = false
 				}
 				var Akwas []string
 				var action string
 				var nb int
 				if insideParenthese2 {
-					arr[i]= strings.Trim(arr[i],"()")
-					Akwas = strings.Split(arr[i],",")
-					arr[i]=""
+					arr[i] = strings.Trim(arr[i], "()")
+					Akwas = strings.Split(arr[i], ",")
+					arr[i] = ""
+					i--
 					action = Akwas[0]
-					if len(Akwas)==2{
+					if len(Akwas) == 2 {
 						nb, err = strconv.Atoi(Akwas[1])
 						if err != nil {
 							fmt.Println("msg err : not a number ", err)
@@ -132,91 +124,60 @@ func main() {
 					}
 				}
 				if action == "cap" || action == "low" || action == "up" {
-					for j:=1 ; j <= nb ; j++ {
-						if i-j-1 < 0 {
+					for j := 1; j <= nb; j++ {
+						if i-j < 0 {
 							break
+						}
+						if !functions.IsWord(arr[i-j]) {
+							continue
 						}
 						if action == "cap" {
 							arr[i-j] = functions.Capitalize(arr[i-j])
-		
+
 						} else if action == "low" {
 							arr[i-j] = functions.ToLower(arr[i-j])
-		
-							
+
 						} else if action == "up" {
 							arr[i-j] = functions.ToUpper(arr[i-j])
-		
+
 						}
 					}
-					
+
 				} else if action == "bin" {
 					integer, err := strconv.ParseInt(arr[i-1], 2, 64)
 					if err != nil {
-						fmt.Println("you can't convert")
-						return
+						i -= 2
+						continue
 					}
 					arr[i-1] = strconv.FormatInt(integer, 10)
+					arr[i] = ""
+					i--
 
 				} else if action == "hex" {
 					integer, err := strconv.ParseInt(arr[i-1], 16, 64)
 					if err != nil {
 						fmt.Println("you can't convert")
-						return
+						continue
 					}
 					arr[i-1] = strconv.FormatInt(integer, 10)
+					arr[i] = ""
+					i--
 
 				}
 			}
-
-			/*lAkwas := false
-			keyword := ""
-			for i := 0; i < len(res); i++ {
-				index := 0
-				if res[i] == '(' {
-					lAkwas = true
-					index = res[i]
-					continue
-				}
-				if res[i] == ')' {
-					lAkwas = false
-					continue
-				}
-				if lAkwas {
-					keyword += string(res[i])
-				}
-	for _, i := range s {
-		if i >= 'A' && i <= 'Z' {
-			res = append(res, i+32)
-		} else {
-			res = append(res, i)
-		}
-	}
-	return string(res)
-}
-
-				if keyword == "cap" {
-					for i := index-1 ; i > 0 ; i--{
-						if res[i] == ' ' {
-							break
-						}
-
-					}category:formatters go
-										arr[i+1] = ""
-						arr[i-1] = ""	keyword  = ""
-				} else if keyword == "low" {
-					for i := index-1 ; i > 0 ; i--{
-						if res[i] == ' ' {
-							break
-						}
-
-					}
-					keyword = ""
-				}
-			}*/
-			
 			str2 := functions.TextFormated(arr)
-			//arr2 := strings.Fields(string(str2))
-			fmt.Printf("%v\n", str2)
+			resulta := functions.Quote(str2)
+			finalres := ""
+			lines := strings.Split(string(resulta), "\n")
+			for _, line := range lines {
+				finalres += line + "\n"
+			}
+			err = os.WriteFile(out, []byte(finalres), 0o644)
+			if err != nil {
+				fmt.Println("Error writing file:", err)
+				return
+			}
+			fmt.Println("bravoo!!!")
 		}
 	}
 }
