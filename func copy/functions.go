@@ -1,0 +1,287 @@
+package functions
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"unicode"
+)
+
+func TextFormated(s []string) string {
+	var res string
+	ponc := ".?:!;,"
+	for i, ch := range s {
+		if ch == "," || ch == "!" || ch == "?" || ch == ":" || ch == ";" || ch == "." {
+			if len(res) > 0 && res[len(res)-1] == ' ' {
+				res = res[:len(res)-1]
+			}
+			if len(res) > 0 && !strings.ContainsAny(res, ponc) {
+				res += ch
+			} else {
+				res += string(ch)
+			}
+			if i+1 < len(s) && s[i+1] != " " {
+				res += " "
+			}
+		} else {
+			res += ch + " "
+		}
+	}
+	return strings.TrimSpace(res)
+}
+
+func HandleQuote(s string) string {
+	var result string
+	wordInside := ""
+	quoteOpen := false
+
+	for i := 0; i < len(s); i++ {
+		word := s[i]
+		if word == '\'' {
+			if quoteOpen {
+				result += strings.TrimSpace(wordInside) + "'"
+				quoteOpen = false
+				wordInside = ""
+			} else {
+				quoteOpen = true
+				wordInside = ""
+				result += "'"
+			}
+			continue
+		}
+		if quoteOpen {
+			wordInside += string(word)
+		} else {
+			result += string(word)
+		}
+	}
+	if quoteOpen {
+		result += wordInside
+	}
+	return result
+}
+
+func IsVowel(s string) bool {
+	if s[0] == 'a' || s[0] == 'o' || s[0] == 'i' || s[0] == 'e' || s[0] == 'u' {
+		return true
+	}
+	return false
+}
+func HandleVowel(s string) string {
+	arr := strings.Fields(s)
+	for i := 0; i < len(arr); i++ {
+		if strings.ToLower(arr[i]) == "a" && i+1 < len(arr) && IsVowel(arr[i+1]) {
+			arr[i] += "n"
+		} else if strings.ToLower(arr[i]) == "an" && i+1 < len(arr) && !IsVowel(arr[i+1]) {
+			arr[i] = arr[i][:len(arr[i])-1]
+		}
+	}
+	str := ""
+	for _, ch := range arr {
+		str += ch + " "
+	}
+	return str
+}
+
+func HandleParenthese(s string) string {
+	t := ""
+	insideParenthese := false
+	for _, v := range s {
+		if v == '(' {
+			t += " " + string(v)
+			insideParenthese = true
+		} else if v == ')' {
+			t += string(v) + " "
+			insideParenthese = false
+
+		} else {
+			if insideParenthese {
+				if v == ',' {
+					t += string(v) + " "
+				} else if v != ' ' {
+					t += string(v)
+				}
+			} else {
+				if v == ',' || v == '.' || v == ':' || v == '!' || v == '?' || v == ';' {
+					t += " " + string(v) + " "
+				} else {
+					t += string(v)
+				}
+			}
+		}
+
+	}
+	return t
+}
+
+func HandleParentheseParam(s []string) string {
+	res2 := ""
+	for _, item := range s {
+		if strings.HasPrefix(item, "(") && strings.HasSuffix(item, ")") {
+			content := item[1 : len(item)-1]
+			if strings.Contains(content, ",") {
+				res2 += "(" + content + ") "
+			} else {
+				switch content {
+				case "cap":
+					res2 += "(cap, 1) "
+				case "low":
+					res2 += "(low, 1) "
+				case "up":
+					res2 += "(up, 1) "
+				case "hex", "bin":
+					res2 += " (" + content + ") "
+				default:
+					res2 += " (" + content + ") "
+				}
+			}
+		} else {
+			res2 += item + " "
+		}
+
+	}
+	return res2
+}
+
+func HandleKeyword(s string) string {
+	str := HandleParenthese(s)
+	arr1 := strings.Fields(string(str))
+	res2 := HandleParentheseParam(arr1)
+	arr := strings.Fields(res2)
+	for i := 0; i < len(arr); i++ {
+		insideParenthese2 := false
+		if i < len(arr)-1 && strings.HasPrefix(arr[i], "(") && strings.HasSuffix(arr[i+1], ")") {
+			insideParenthese2 = true
+		} else {
+			insideParenthese2 = false
+		}
+		var action string
+		var nb int
+		if insideParenthese2 {
+			arr[i] = strings.TrimPrefix(arr[i], "(")
+			arr[i] = strings.TrimSuffix(arr[i], ",")
+			action = arr[i]
+			b := strings.TrimSuffix(arr[i+1], ")")
+			var err error
+			nb, err = strconv.Atoi(b)
+			if err != nil {
+				fmt.Println("msg err : not a number ", err)
+				continue
+			}
+		}
+		fmt.Println(arr[i])
+		if action == "cap" || action == "low" || action == "up" {
+			t := i
+			for j := 1; j <= nb; j++ {
+				if i-j < 0 {
+					break
+				}
+				if !IsWord(arr[i-j]) {
+					i--
+					continue
+				}
+				if action == "cap" {
+					arr[i-j] = Capitalize(arr[i-j])
+				} else if action == "low" {
+					arr[i-j] = ToLower(arr[i-j])
+				} else if action == "up" {
+					arr[i-j] = ToUpper(arr[i-j])
+				}
+				i--
+			}
+			i = t
+			arr[i] = ""
+			arr[i+1] = ""
+		} else if arr[i] == "(bin)" {
+			integer, err := strconv.ParseInt(arr[i-1], 2, 64)
+			if err != nil {
+				fmt.Println("you can't convert")
+				continue
+			}
+			arr[i-1] = strconv.Itoa(int(integer))
+			arr = append(arr[:i], arr[i+1:]...)
+			i--
+
+		} else if arr[i] == "(hex)" {
+			integer, err := strconv.ParseInt(arr[i-1], 16, 64)
+			if err != nil {
+				fmt.Println("you can't convert")
+				continue
+			}
+			arr[i-1] = strconv.Itoa(int(integer))
+			arr = append(arr[:i], arr[i+1:]...)
+			i--
+
+		}
+	}
+	return strings.Join(arr, " ")
+}
+
+func IsAlphabetNumerique(s byte) bool {
+	return (s < 'a' || s > 'z') && (s < 'A' || s > 'Z') && (s < '0' || s > '9')
+}
+
+func IsWord(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
+func Capitalize(word string) string {
+	word = ToLower(word)
+	for i := 0; i < len(word); i++ {
+		word = ToUpper(string(word[0])) + word[1:]
+	}
+	return word
+}
+
+// func Split(s, sep string) []string {
+// 	var result []string
+
+// 	if len(sep) == 0 {
+// 		return []string{s}
+// 	}
+
+// 	start := 0
+// 	for i := 0; i < len(s); i++ {
+// 		if i+len(sep) <= len(s) && s[i:i+len(sep)] == sep {
+// 			result = append(result, s[start:i])
+// 			// Move the start position past the separator
+// 			start = i + len(sep)
+// 			// Skip over the separator
+// 			i += len(sep) - 1
+// 		}
+// 	}
+
+// Add the last segment after the last separator
+// 	result = append(result, s[start:])
+
+// 	return result
+// }
+
+func ToUpper(s string) string {
+	var res []rune
+	str := []rune(s)
+	for _, i := range str {
+		if unicode.IsLetter(i) {
+			res = append(res, unicode.ToUpper(i))
+		} else {
+			res = append(res, i)
+		}
+	}
+	return string(res)
+}
+
+func ToLower(s string) string {
+	var res []rune
+	for _, i := range s {
+		if i >= 'A' && i <= 'Z' {
+			res = append(res, i+32)
+		} else {
+			res = append(res, i)
+		}
+	}
+	return string(res)
+}
