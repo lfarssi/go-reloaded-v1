@@ -183,6 +183,9 @@ func HandleFlag(s string) string {
 	arr := strings.Fields(res2)
 	for i := 0; i < len(arr); i++ {
 		if arr[i] == "(cap," || arr[i] == "(low," || arr[i] == "(up," {
+			if i+1 == len(arr) {
+				continue
+			}
 			//remove ( and , from the flag
 			arr[i] = strings.TrimPrefix(arr[i], "(")
 			arr[i] = strings.TrimSuffix(arr[i], ",")
