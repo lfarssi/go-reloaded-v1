@@ -1,6 +1,8 @@
 package functions
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -28,7 +30,7 @@ func TextFormated(s []string) string {
 	return strings.TrimSpace(res)
 }
 
-func Quote(s string) string {
+func HandleQuote(s string) string {
 	var result string
 	wordInside := ""
 	quoteOpen := false
@@ -65,16 +67,175 @@ func IsVowel(s string) bool {
 	}
 	return false
 }
-func HandleVowel(arr []string, i int) []string {
-	if strings.ToLower(arr[i]) == "a" && i+1 < len(arr) && IsVowel(arr[i+1]) {
-		arr[i] += "n"
-	} else if strings.ToLower(arr[i]) == "an" && i+1 < len(arr) && !IsVowel(arr[i+1]) {
-		arr[i] = arr[i][:len(arr[i])-1]
+func HandleVowel(s string) string {
+	arr := strings.Fields(s)
+	for i := 0; i < len(arr); i++ {
+		if strings.ToLower(arr[i]) == "a" && i+1 < len(arr) && IsVowel(arr[i+1]) {
+			arr[i] += "n"
+		} else if strings.ToLower(arr[i]) == "an" && i+1 < len(arr) && !IsVowel(arr[i+1]) {
+			arr[i] = arr[i][:len(arr[i])-1]
+		}
 	}
-	return arr
+	str := ""
+	for _, ch := range arr {
+		str += ch + " "
+	}
+	return str
 }
 
-func IsAlphabet(s byte) bool {
+func HandleParenthese(s string) string {
+	t := ""
+	insideParenthese := false
+	beforeVergule := true
+	for _, v := range s {
+		if v == '(' {
+			t += " " + string(v)
+			insideParenthese = true
+		} else if v == ')' {
+			t += string(v) + " "
+			insideParenthese = false
+
+		} else {
+			if insideParenthese {
+				if v == ',' {
+					beforeVergule = false
+				}
+				if beforeVergule{
+					t += string(v)
+					} else {
+						if v != ' '{
+							t+=string(v)
+						}
+					}
+			} else {
+				if v == ',' || v == '.' || v == ':' || v == '!' || v == '?' || v == ';' {
+					t += " " + string(v) + " "
+				} else {
+					t += string(v)
+				}
+			}
+		}
+
+	}
+	return t
+}
+
+func HandleParentheseParam(s []string) string {
+	res2 := ""
+	for _, item := range s {
+		if strings.HasPrefix(item, "(") && strings.HasSuffix(item, ")") {
+			content := item[1 : len(item)-1]
+			if strings.Contains(content, ",") {
+				arr:= strings.Split(content, ",")
+				content = ""
+				for i, c:= range arr{
+					if !IsWord(c){
+						arr[i] = ", " + c
+					}
+					content += arr[i]
+				}
+				
+				res2 += "(" + content + ") "
+			} else {
+				switch content {
+				case "cap":
+					res2 += "(cap, 1) "
+				case "low":
+					res2 += "(low, 1) "
+				case "up":
+					res2 += "(up, 1) "
+				case "hex", "bin":
+					res2 += " (" + content + ") "
+				default:
+					res2 += " (" + content + ") "
+				}
+			}
+		} else {
+			res2 += item + " "
+		}
+
+	}
+
+	return res2
+}
+
+// func FlagCapitalize(arr []string, nb int) []string {
+// 	for i:= nb ; i>0; i-- {
+// 	   arr[i] = Capitalize(arr[i])
+// 	}
+// 	return arr
+//    }
+
+func HandleFlag(s string) string {
+	str := HandleParenthese(s)
+	arr1 := strings.Fields(string(str))
+	res2 := HandleParentheseParam(arr1)
+	
+	arr := strings.Fields(res2)
+	fmt.Println(arr)
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == "(cap," || arr[i] == "(low," || arr[i] == "(up," {
+			arr[i] = strings.TrimPrefix(arr[i], "(")
+			arr[i] = strings.TrimSuffix(arr[i], ",")
+			arr[i+1] = strings.TrimSuffix(arr[i+1], ")")
+			var err error
+			var nb int
+			nb, err = strconv.Atoi(arr[i+1])
+			if err != nil {
+				fmt.Println("msg err : The params is not a number ", err)
+				continue
+			}
+			temp := i
+			for j := 1; j <= nb; j++ {
+				if i-j < 0 {
+					break
+				}
+				if !IsWord(arr[i-j]) || arr[i-j]== "cap" || arr[i-j] == "low" || arr[i-j]== "up" || arr[i-j]== "(bin)" || arr[i-j]== "(hex)" {
+					i--
+					j--
+					continue
+				}
+				if arr[i] == "cap" {
+					arr[i-j] = Capitalize(arr[i-j])
+					arr = append(arr[:i],arr[i+2:]... )
+					i--
+				} else if arr[i] == "low" {
+					arr[i-j] = ToLower(arr[i-j])
+					arr = append(arr[:i],arr[i+2:]... )
+					i--
+				} else if arr[i] == "up" {
+					arr[i-j] = ToUpper(arr[i-j])
+					arr = append(arr[:i],arr[i+2:]... )
+					i--
+				}
+			}
+			i = temp
+		} else if arr[i] == "(bin)" {
+			integer, err := strconv.ParseInt(arr[i-1], 2, 64)
+			if err != nil {
+				fmt.Println("you can't convert")
+				continue
+			}
+			arr[i-1] = strconv.Itoa(int(integer))
+			arr = append(arr[:i], arr[i+1:]...)
+			i--
+
+		} else if arr[i] == "(hex)" {
+			integer, err := strconv.ParseInt(arr[i-1], 16, 64)
+			if err != nil {
+				fmt.Println("you can't convert")
+				continue
+			}
+			arr[i-1] = strconv.Itoa(int(integer))
+			arr = append(arr[:i], arr[i+1:]...)
+			i--
+
+		}
+	}
+	return strings.Join(arr, " ")
+}
+
+func IsAlphabetNumerique(s byte) bool {
 	return (s < 'a' || s > 'z') && (s < 'A' || s > 'Z') && (s < '0' || s > '9')
 }
 
@@ -120,13 +281,11 @@ func Capitalize(word string) string {
 
 func ToUpper(s string) string {
 	var res []rune
-	for _, i := range s {
-		if i >= 'a' && i <= 'z' {
-			res = append(res, i-32)
-		} else if i == 'é' {
-			res = append(res, unicode.ToUpper(i))
+	for _, ch := range s {
+		if unicode.IsLetter(ch) {
+			res = append(res, unicode.ToUpper(ch))
 		} else {
-			res = append(res, i)
+			res = append(res, ch)
 		}
 	}
 	return string(res)
@@ -135,8 +294,8 @@ func ToUpper(s string) string {
 func ToLower(s string) string {
 	var res []rune
 	for _, i := range s {
-		if i >= 'A' && i <= 'Z' {
-			res = append(res, i+32)
+		if unicode.IsLetter(i) {
+			res = append(res,unicode.ToLower(i))
 		} else {
 			res = append(res, i)
 		}
