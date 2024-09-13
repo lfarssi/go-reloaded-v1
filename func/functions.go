@@ -111,7 +111,7 @@ func HandleParenthese(s string) string {
 				}
 				if beforeVergule{
 					t += string(v)
-					} else {
+				} else {
 						if v != ' '{
 							t+=string(v)
 						}
@@ -202,7 +202,9 @@ func HandleFlag(s string) string {
 			}
 			// store temporairement the index
 			temp := i
-
+			if nb < 0 {
+				continue
+			}
 			// loop for the number in the flag
 			for j := 1; j <= nb; j++ {
 				// break the loop before err out of range
