@@ -2,7 +2,7 @@
 
  an an a
 
-fsdfq , fdsq , fsdq , fsq   . fsd : dfs . . . fqds (up, 2) (cap)
+fsdfq , fdsq , fsdq , fsq   . fsd : dfs fqds (up, 2) (cap)
 
 
 1000000 (bin) (hex) (bin)
