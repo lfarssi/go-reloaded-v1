@@ -213,6 +213,7 @@ func HandleFlag(s string) string {
 				if arr[i] == "cap" {
 					arr[i-j] = Capitalize(arr[i-j])
 				} else if arr[i] == "low" {
+					arr[i-j] = ToLower(arr[i-j])
 				} else if arr[i] == "up" {
 					arr[i-j] = ToUpper(arr[i-j])
 				}
