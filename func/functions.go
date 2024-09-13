@@ -7,6 +7,7 @@ import (
 	"unicode"
 )
 
+// formater le text like this are , rare ... reae => are, rare... reae
 func TextFormated(s []string) string {
 	var res string
 	ponc := ".?:!;,"
@@ -29,7 +30,7 @@ func TextFormated(s []string) string {
 	}
 	return strings.TrimSpace(res)
 }
-
+// handle if there is a word between ' make it a quote like ' and ' => 'and'
 func HandleQuote(s string) string {
 	var result string
 	wordInside := ""
