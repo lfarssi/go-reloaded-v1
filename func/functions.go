@@ -225,7 +225,6 @@ func HandleFlag(s string) string {
 		} else if arr[i] == "(bin)" {
 			// convert the string to 64 bit integer base 2
 			integer, err := strconv.ParseInt(arr[i-1], 2, 64)
-			fmt.Println(integer)
 			if err != nil {
 				fmt.Println("you can't convert")
 				continue
