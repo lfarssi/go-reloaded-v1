@@ -1,7 +1,6 @@
 package functions
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -30,6 +29,7 @@ func TextFormated(s []string) string {
 	}
 	return strings.TrimSpace(res)
 }
+
 // handle if there is a word between ' make it a quote like ' and ' => 'and'
 func HandleQuote(s string) string {
 	var result string
@@ -86,11 +86,12 @@ func HandleVowel(s string) string {
 	}
 	return str
 }
+
 /*
-the function is also for separate punctuation with spaces but the most important rule 
-is to handle the between parentheses flag 
+the function is also for separate punctuation with spaces but the most important rule
+is to handle the between parentheses flag
 explination: adding the flag like with the space to check the format is it correct
-and the number without spaces 
+and the number without spaces
 */
 func HandleParenthese(s string) string {
 	t := ""
@@ -109,13 +110,13 @@ func HandleParenthese(s string) string {
 				if v == ',' {
 					beforeVergule = false
 				}
-				if beforeVergule{
+				if beforeVergule {
 					t += string(v)
 				} else {
-						if v != ' '{
-							t+=string(v)
-						}
+					if v != ' ' {
+						t += string(v)
 					}
+				}
 			} else {
 				if v == ',' || v == '.' || v == ':' || v == '!' || v == '?' || v == ';' {
 					t += " " + string(v) + " "
@@ -132,7 +133,7 @@ func HandleParenthese(s string) string {
 /*
 in this function i put the item between the () and modify it with my rules
 first rule if the flag is without number i add 1 default number in it
-second if the flag has a number i split with comma and add with  space after comma 
+second if the flag has a number i split with comma and add with  space after comma
 */
 func HandleParentheseParam(s []string) string {
 	res2 := ""
@@ -140,15 +141,8 @@ func HandleParentheseParam(s []string) string {
 		if strings.HasPrefix(item, "(") && strings.HasSuffix(item, ")") {
 			content := item[1 : len(item)-1]
 			if strings.Contains(content, ",") {
-				arr:= strings.Split(content, ",")
-				content = ""
-				for i, c:= range arr{
-					if !IsWord(c){
-						arr[i] = ", " + c
-					}
-					content += arr[i]
-				}
-				
+				arr := strings.Split(content, ",")
+				content = arr[0] + ", " + arr[1]
 				res2 += "(" + content + ") "
 			} else {
 				switch content {
@@ -172,10 +166,11 @@ func HandleParentheseParam(s []string) string {
 
 	return res2
 }
+
 /*
 this is the most important function in my program
 i handle the parenthese i after that i convert it to a slice to handle the parameter inside the parenthese
-after that i convert it to a slice again to handle the flag based on the instruction 
+after that i convert it to a slice again to handle the flag based on the instruction
 */
 func HandleFlag(s string) string {
 	str := HandleParenthese(s)
@@ -187,19 +182,16 @@ func HandleFlag(s string) string {
 			if i+1 == len(arr) {
 				continue
 			}
-			//remove ( and , from the flag
-			arr[i] = strings.TrimPrefix(arr[i], "(")
-			arr[i] = strings.TrimSuffix(arr[i], ",")
-			//remove )  from the number
-			arr[i+1] = strings.TrimSuffix(arr[i+1], ")")
 			var err error
 			var nb int
+			//remove )  from the number
 			// convert the number to int value
-			nb, err = strconv.Atoi(arr[i+1])
+			nb, err = strconv.Atoi(strings.TrimSuffix(arr[i+1], ")"))
 			if err != nil {
-				fmt.Println("msg err : The params is not a number ", err)
+				//fmt.Println("msg err : The params is not a number ", err)
 				continue
 			}
+
 			// store temporairement the index
 			temp := i
 			if nb < 0 {
@@ -211,28 +203,37 @@ func HandleFlag(s string) string {
 				if i-j < 0 {
 					break
 				}
-				// skip if it's not a word or it's a flag
-				if !IsWord(arr[i-j]) || arr[i-j]== "cap" || arr[i-j] == "low" || arr[i-j]== "up" || arr[i-j]== "(bin)" || arr[i-j]== "(hex)" {
-					continue
-				}
 				// apply the changes based on the number
-				if arr[i] == "cap" {
+				if arr[i] == "(cap," {
+					if !IsWord(arr[i-j]) && i-1 > 0 {
+						i--
+					}
 					arr[i-j] = Capitalize(arr[i-j])
-				} else if arr[i] == "low" {
+					
+				} else if arr[i] == "(low," {
+					if !IsWord(arr[i-j]) && i-1 > 0 {
+						i--
+					}
 					arr[i-j] = ToLower(arr[i-j])
-				} else if arr[i] == "up" {
+					
+				} else if arr[i] == "(up," {
+					if !IsWord(arr[i-j]) && i-1 > 0 {
+						i--
+					}
 					arr[i-j] = ToUpper(arr[i-j])
+					
 				}
+				i = temp
 			}
-			// remove the flag and the number 
-			arr = append(arr[:i],arr[i+2:]... )
+			// remove the flag and the number
+			arr = append(arr[:i], arr[i+2:]...)
 			// return one step to continue from the correct position
-			i = temp-1
+			i = temp - 1
 		} else if arr[i] == "(bin)" {
 			// convert the string to 64 bit integer base 2
 			integer, err := strconv.ParseInt(arr[i-1], 2, 64)
 			if err != nil {
-				fmt.Println("you can't convert")
+				//fmt.Println("you can't convert")
 				continue
 			}
 			arr[i-1] = strconv.Itoa(int(integer))
@@ -243,7 +244,7 @@ func HandleFlag(s string) string {
 			// convert the string to 64 bit integer base 16
 			integer, err := strconv.ParseInt(arr[i-1], 16, 64)
 			if err != nil {
-				fmt.Println("you can't convert")
+				//fmt.Println("you can't convert")
 				continue
 			}
 			arr[i-1] = strconv.Itoa(int(integer))
@@ -255,15 +256,29 @@ func HandleFlag(s string) string {
 	return strings.Join(arr, " ")
 }
 
+// this function is used to skip the non words runes
+func Word(s string) string {
+	for _, r := range s {
+		if !(r >= 'a' && r <= 'z') && !(r >= 'A' && r <= 'Z') {
+			continue
+		}
+	}
+	return s
+}
+
 // check if the string is a letter or not
 func IsWord(s string) bool {
 	for _, r := range s {
-		if !unicode.IsLetter(r) {
+		if !(r >= 'a' && r <= 'z') && !(r >= 'A' && r <= 'Z') {
+			if r == '(' || r == ')' {
+				return true
+			}
 			return false
 		}
 	}
 	return true
 }
+
 func Capitalize(word string) string {
 	word = ToLower(word)
 	for i := 0; i < len(word); i++ {
@@ -311,8 +326,8 @@ func ToUpper(s string) string {
 func ToLower(s string) string {
 	var res []rune
 	for _, i := range s {
-		if unicode.IsLetter(i) {
-			res = append(res,unicode.ToLower(i))
+		if (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') {
+			res = append(res, unicode.ToLower(i))
 		} else {
 			res = append(res, i)
 		}
