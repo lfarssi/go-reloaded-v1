@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	 "go-reloaded/func"
+	"go-reloaded/func"
 	"os"
 	"strings"
 )

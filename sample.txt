@@ -1,6 +1,1 @@
- this is fahd (up) (cap, -9)
- ' a a '
- é (up)
-(up,h) (up)
-My age is 2 years (up, 2)
-4you (cap)
+I have to pack 101 (bin) outfits. Packed 1a (hex) just to be sure
