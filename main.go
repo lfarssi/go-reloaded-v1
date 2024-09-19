@@ -45,12 +45,15 @@ func main() {
 			}
 			finalres := ""
 			lines := strings.Split(string(res), "\n")
-			for _, line := range lines {
+			for i, line := range lines {
 				line = functions.HandleVowel(line)
-				line = functions.HandleQuote(line)
 				line = functions.HandleFlag(line)
 				line = functions.TextFormated(strings.Fields(line))
-				finalres += line + "\n"
+				line = functions.HandleQuote(line)
+				finalres += line 
+				if i != len(lines)-1{
+					finalres+="\n"
+				}
 			}
 
 			err = os.WriteFile(out, []byte(finalres), 0o644)

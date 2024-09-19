@@ -38,14 +38,20 @@ func HandleQuote(s string) string {
 
 	for i := 0; i < len(s); i++ {
 		word := s[i]
-		if word == '\'' {
+		if word == '\''  && !(((s[i-1] >= 'a' && s[i-1] <= 'z')|| (s[i-1] >= 'A' && s[i+1] <= 'Z')) && ((s[i+1] >= 'a' && s[i+1] <= 'z')|| (s[i+1] >= 'A' && s[i+1] <= 'Z'))) {
 			if quoteOpen {
 				result += strings.TrimSpace(wordInside) + "'"
+				if s[i+1] != ' ' {
+					result += " "
+				}
 				quoteOpen = false
 				wordInside = ""
 			} else {
 				quoteOpen = true
 				wordInside = ""
+				if s[i-1] != ' ' {
+					result += " "
+				}
 				result += "'"
 			}
 			continue
