@@ -61,7 +61,7 @@ func HandleQuote(s string) string {
 			}
 			if quoteOpen {
 				result += strings.TrimSpace(wordInside) + "'"
-				if i < len(s)-1 && s[i+1] != ' ' {
+				if i < len(s)-1 && IsWord(string(s[i+1])) {
 					result += " "
 				}
 				quoteOpen = false
@@ -69,7 +69,7 @@ func HandleQuote(s string) string {
 			} else {
 				quoteOpen = true
 				wordInside = ""
-				if i > 0 && s[i-1] != ' ' {
+				if i > 0 && IsWord(string(s[i-1])){
 					result += " "
 				}
 				result += "'"
