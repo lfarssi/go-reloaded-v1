@@ -15,26 +15,12 @@ func main() {
 		os.Exit(1)
 	} else if length > 2 {
 		fmt.Println("too much arguments")
-		os.Exit(1)
+		os.Exit(21)
 	} else {
 		in := args[0]
 		out := args[1]
-		inExt := ""
-		index := -1
-		outExt := ""
-		for i := len(in) - 1; i > 0; i-- {
-			if in[i] == '.' {
-				index = i
-			}
-		}
-		inExt = in[index+1:]
-		for j := len(out) - 1; j > 0; j-- {
-			if out[j] == '.' {
-				index = j
-			}
-		}
-		outExt = out[index+1:]
-		if inExt != "txt" || outExt != "txt" {
+
+		if !strings.HasSuffix(in, ".txt") || !strings.HasSuffix(out, ".txt") {
 			fmt.Println("the extension must be .txt")
 			os.Exit(1)
 		} else {
@@ -46,10 +32,10 @@ func main() {
 			finalres := ""
 			lines := strings.Split(string(res), "\n")
 			for i, line := range lines {
-				line = functions.HandleVowel(line)
 				line = functions.HandleFlag(line)
-				line = functions.TextFormated(strings.Fields(line))
+				line = functions.HandleVowel(line)
 				line = functions.HandleQuote(line)
+				line = functions.TextFormated(strings.Fields(line))
 				finalres += line 
 				if i != len(lines)-1{
 					finalres+="\n"
@@ -61,7 +47,7 @@ func main() {
 				fmt.Println("Error writing file:", err)
 				return
 			}
-			fmt.Println("bravoo!!!")
+			//fmt.Println("bravoo!!!")
 		}
 	}
 }
